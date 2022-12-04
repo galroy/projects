@@ -1,0 +1,47 @@
+/*
+ * SDCardMountSingleton.h
+ *
+ *  Created on: Dec 1, 2022
+ *      Author: USER-PC
+ */
+
+#ifndef INC_SDCARDMOUNTSINGLETON_H_OLD_
+#define INC_SDCARDMOUNTSINGLETON_H_OLD_
+
+#include "fatfs.h"
+
+class SDCardMountSingleton {
+
+public:
+	static SDCardMountSingleton* getInstance() {
+
+		return (!m_instanceSingleton) ? m_instanceSingleton =
+												new SDCardMountSingleton :
+										m_instanceSingleton;
+	}
+
+private:
+	FATFS m_fatFs;
+	// private constructor and destructor
+	SDCardMountSingleton() {
+		FRESULT fres;
+
+		osDelay(1000); //a short delay is important to let the SD card settle
+		fres = f_mount(&m_fatFs, "", 1); //1=mount now
+		if (fres != FR_OK) {
+			//printf("f_mount error (%i)\r\n", fres);
+		}
+	}
+	~SDCardMountSingleton() {
+	}
+
+	// private copy constructor and assignment operator
+	SDCardMountSingleton(const SDCardMountSingleton&);
+	SDCardMountSingleton& operator=(const SDCardMountSingleton&);
+
+	static SDCardMountSingleton *m_instanceSingleton;
+};
+
+SDCardMountSingleton *SDCardMountSingleton::m_instanceSingleton = nullptr;
+
+#endif /* INC_SDCARDMOUNTSINGLETON_H_OLD_ */
