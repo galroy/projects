@@ -39,7 +39,8 @@ Manager::Manager(UART_HandleTypeDef *huart2, I2C_HandleTypeDef *hi2c1) {
 
 	//pSDCardMountSingleton = pSDCardMountSingleton->getInstance();
 	if (initSDCardFileSystem() != FR_OK) {
-		LOG_INFO("The file system is not initialized\r\nLog files will not be saved\r\nCheck if the SDCARD card is in place\r\n");
+		LOG_INFO(
+				"The file system is not initialized\r\nLog files will not be saved\r\nCheck if the SDCARD card is in place\r\n");
 	}
 
 	setTemperatureBoundary();
@@ -139,7 +140,6 @@ FRESULT Manager::initSDCardFileSystem() {
 
 }
 
-
 void Manager::setTemperatureBoundary() {
 	if (getTemperatureBoundaryFromFlash() == false) {
 		m_temperatureBoundary.m_warning = DEFULT_WARNING_TEMPERATURE;
@@ -174,7 +174,6 @@ void Manager::printAlertLogToSDCard(char *alertType, DateTime *pDT) {
 			"Alert state %-8s Temperature: %4.1f date time stamp %02d.%02d.%02d %02d:%02d:%02d\r\n",
 			alertType, m_pDHT->getTempperature(), pDT->day, pDT->month,
 			pDT->year, pDT->hours, pDT->min, pDT->sec);
-
 
 	LOG_DEBUG("%s", buff);
 
@@ -220,7 +219,6 @@ void Manager::printLogToSDCARD(DateTime *pDT) {
 
 	LOG_DEBUG("%s", buff);
 
-
 	f_sync(&fil);
 	if (f_printf(&fil, "%s", buff) == -1) {
 		LOG_ERROR("print to log file fail\r\n");
@@ -243,8 +241,7 @@ void Manager::normalizManagerThreadDelay(DateTime *pDT) {
 	}
 
 	if (delta > 4 || delta < -4 || delta == 0) {
-		m_managerThreadDelay = MILLISECONDS250; //try back to normal
-
+		m_managerThreadDelay = MILLISECONDS250; //try back to norma
 	} else {
 		m_managerThreadDelay = m_managerThreadDelay
 				+ (((delta * 1000) / 60) / 4);
@@ -258,7 +255,7 @@ void Manager::printTemperature() {
 }
 
 void Manager::warningState() {
-	//HAL_GPIO_WritePin(BLUELED_GPIO_Port, BLUELED_Pin, GPIO_PIN_RESET);
+
 	m_pBlueLed->off();
 	m_pRedLed->on();
 	m_temperatureAlarmStat = TAS_OFF;
@@ -266,7 +263,7 @@ void Manager::warningState() {
 	m_sysState = SYS_WARNING;
 }
 void Manager::criticalState() {
-	//HAL_GPIO_WritePin(BLUELED_GPIO_Port, BLUELED_Pin, GPIO_PIN_RESET);
+
 	m_pBlueLed->off();
 	m_pRedLed->blink(300);
 	if (m_temperatureAlarmStat == TAS_OFF) {
@@ -276,7 +273,7 @@ void Manager::criticalState() {
 	m_sysState = SYS_CRITICAL;
 }
 void Manager::normalState() {
-	//HAL_GPIO_WritePin(BLUELED_GPIO_Port, BLUELED_Pin, GPIO_PIN_SET);
+
 	m_pBlueLed->on();
 	m_pRedLed->off();
 	m_temperatureAlarmStat = TAS_OFF;
@@ -288,13 +285,39 @@ void Manager::GetCurrDateTimeFromFlash(DateTime *pDT) {
 	*pDT = m_pRtcClock->getTime();
 }
 
+void Manager::AlertLog(systemState sysState) {
+	DateTime dt;
+
+	if (m_pDHT->getTempperature() >= m_temperatureBoundary.m_critical) {
+		sysState = SYS_CRITICAL;
+		if (sysState != m_sysState) {
+			GetCurrDateTimeFromFlash(&dt);
+			printAlertLogToSDCard(S_CRITICAL, &dt);
+			criticalState();
+		}
+	} else {
+		if (m_pDHT->getTempperature() >= m_temperatureBoundary.m_warning) {
+			sysState = SYS_WARNING;
+			if (sysState != m_sysState) {
+				warningState();
+				GetCurrDateTimeFromFlash(&dt);
+				printAlertLogToSDCard(S_WARNING, &dt);
+			}
+		} else {
+			sysState = SYS_NORMAL;
+			if (sysState != m_sysState) {
+				normalState();
+			}
+		}
+	}
+
+//	return sysState;
+}
+
 extern "C" void StartManagerTask(void *argument) {
 
-	printf("start temratur01 app\r\ntype help for help\r\n");
-	/*if (m->initSDCardFileSystem() != FR_OK) {
-	 printf(
-	 "The file system is not initialized\r\nLog files will not be saved\r\nCheck if the SDCARD card is in place\r\n");
-	 }*/
+	printf("temratur01 app by Gal Alroy\r\ntype help for help\r\n");
+
 	DateTime dt;
 	systemState sysState = SYS_NORMAL;
 	static uint32_t minCounter = 0;
@@ -309,37 +332,8 @@ extern "C" void StartManagerTask(void *argument) {
 			if (m->getDHT()->getShowTemperatureFlag() == true) {
 				m->printTemperature();
 			}
+			m->AlertLog(sysState);
 
-			if (m->getDHT()->getTempperature()
-					>= m->getTemperatureBoundary()->m_warning
-					&& m->getDHT()->getTempperature()
-							< m->getTemperatureBoundary()->m_critical) {
-				sysState = SYS_WARNING;
-				if (sysState != m->getSysState()) {
-					m->warningState();
-					m->GetCurrDateTimeFromFlash(&dt);
-					m->printAlertLogToSDCard(S_WARNING, &dt);
-				}
-
-			} else {
-				if (m->getDHT()->getTempperature()
-						>= m->getTemperatureBoundary()->m_critical) {
-					sysState = SYS_CRITICAL;
-					if (sysState != m->getSysState()) {
-						m->GetCurrDateTimeFromFlash(&dt);
-						m->printAlertLogToSDCard(S_CRITICAL, &dt);
-						m->criticalState();
-					}
-
-				} else {
-					sysState = SYS_NORMAL;
-					if (sysState != m->getSysState()) {
-						m->normalState();
-					}
-
-				}
-
-			}
 			sysState = m->getSysState();
 		}
 		osDelay(m->getManagerThreadDelay());
