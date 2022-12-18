@@ -7,7 +7,9 @@
 
 #include "LedGpioTask.h"
 #include "Manager.h"
+
 extern Manager *m;
+
 LedGpioTask::LedGpioTask(GPIO_TypeDef *gpioPort,uint16_t gpioPin) {
 	m_gpioPort = gpioPort;
 	m_gpioPin = gpioPin;
@@ -54,7 +56,6 @@ extern "C" void startBlinkLed(void* argo)
 			break;
 
 		}
-
 
 		osDelay(m->getRedLed()->getDelay());
 	}

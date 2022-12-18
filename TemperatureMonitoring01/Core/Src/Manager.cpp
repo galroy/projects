@@ -17,13 +17,20 @@ extern osMutexId_t alertFileMutexHandle;
 extern osSemaphoreId_t DHT_SEMHandle;
 extern Manager *m;
 
-#define MILLISECONDS250		250
-#define CYCLES250			250
-#define LOG_LEN				80
-#define MILLISECONDS1000	1000
+enum timeDefine{
+	MILLISECONDS250 = 250,
+	CYCLES250 = 250,
+	SIXTY_SECONDS = 60,
+	FOUR_SECONDS = 4,
+	THOUSAND_MILLISECONDS = 1000
+};
 
-#define DEFULT_WARNING_TEMPERATURE	26
-#define	DEFULT_CRITICAL_TEMPERATURE	28
+enum TemperatureBoundary{
+	DEFULT_WARNING_TEMPERATURE = 26,
+	DEFULT_CRITICAL_TEMPERATURE = 28
+};
+
+#define LOG_LEN		80
 
 #define S_WARNING	(char*)"warning"
 #define S_CRITICAL	(char*)"critical"
@@ -37,7 +44,6 @@ Manager::Manager(UART_HandleTypeDef *huart2, I2C_HandleTypeDef *hi2c1) {
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	HAL_TIM_Base_Start_IT(&htim3);
 
-	//pSDCardMountSingleton = pSDCardMountSingleton->getInstance();
 	if (initSDCardFileSystem() != FR_OK) {
 		LOG_INFO(
 				"The file system is not initialized\r\nLog files will not be saved\r\nCheck if the SDCARD card is in place\r\n");
@@ -130,8 +136,8 @@ void Manager::initCliContainer() {
 FRESULT Manager::initSDCardFileSystem() {
 	FRESULT fres;
 	FATFS fatFs;
-	//osDelay(1000); //a short delay is important to let the SD card settle
-	HAL_Delay(MILLISECONDS1000);
+
+	HAL_Delay(THOUSAND_MILLISECONDS);
 	fres = f_mount(&fatFs, "", 1); //1=mount now
 	if (fres != FR_OK) {
 		LOG_ERROR("f_mount error (%i)\r\n", fres);
@@ -202,15 +208,17 @@ void Manager::printLogToSDCARD(DateTime *pDT) {
 		return;
 	}
 
-	if (m_sysState == SYS_NORMAL) {
-		strcpy(sys, S_NORMAL);
-	} else {
+	do {
+		if (m_sysState == SYS_NORMAL) {
+			strcpy(sys, S_NORMAL);
+			break;
+		}
 		if (m_sysState == SYS_WARNING) {
 			strcpy(sys, S_WARNING);
-		} else {
-			strcpy(sys, S_CRITICAL);
+			break;
 		}
-	}
+		strcpy(sys, S_CRITICAL);
+	} while (false);
 
 	sprintf(buff,
 			"system state %-8s Temperature: %4.1f date time stamp %02d.%02d.%02d %02d:%02d:%02d\r\n",
@@ -236,15 +244,15 @@ void Manager::normalizManagerThreadDelay(DateTime *pDT) {
 	uint32_t sec;
 	int delta;
 	if (m_pRtcClock->getSeconds(pDT, &sec) == true) {
-		delta = 60 - (int(sec - m_logTimeStampSecend));
+		delta = SIXTY_SECONDS - (int(sec - m_logTimeStampSecend));
 		m_logTimeStampSecend = sec;
 	}
 
-	if (delta > 4 || delta < -4 || delta == 0) {
+	if (delta > FOUR_SECONDS || delta < -FOUR_SECONDS || delta == 0) {
 		m_managerThreadDelay = MILLISECONDS250; //try back to norma
 	} else {
 		m_managerThreadDelay = m_managerThreadDelay
-				+ (((delta * 1000) / 60) / 4);
+				+ (((delta * THOUSAND_MILLISECONDS) / SIXTY_SECONDS) / FOUR_SECONDS);
 	}
 
 }
@@ -311,7 +319,6 @@ void Manager::AlertLog(systemState sysState) {
 		}
 	}
 
-//	return sysState;
 }
 
 extern "C" void StartManagerTask(void *argument) {
@@ -346,10 +353,10 @@ extern "C" void startReadDHTTask(void *argument) {
 		osStatus_t status;
 		status = osSemaphoreAcquire(DHT_SEMHandle, osWaitForever);
 		if (status == osOK) {
-			m->getDHT()->read();
+			m->getDHT()->readSync();
 		}
 		osSemaphoreRelease(DHT_SEMHandle);
 
-		osDelay(MILLISECONDS1000);
+		osDelay(THOUSAND_MILLISECONDS);
 	}
 }

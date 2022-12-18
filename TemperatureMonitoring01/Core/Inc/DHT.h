@@ -11,7 +11,6 @@
 #include "main.h"
 #include "TimerTask.h"
 
-
 enum DhtState
 {
 	DHT_STATE_NO_DATA,
@@ -45,10 +44,9 @@ private:
 	void setGpioExti();
 	int waitWhileEqual(int value, int expectedTime);
 public:
-	// sync read
-	int read();
 
-	// async read
+	int readSync();
+
 	void readAsync();
 	void onGpioInterrupt(uint16_t pin);
 	void timerFunc();

@@ -7,30 +7,24 @@
 #include "main.h"
 #include "CommandTask.h"
 #include "Manager.h"
+
 extern Manager *m;
-
-
-
-
 
 int CommandTask::commTask()
 {
 	uint8_t ch;
 
-	//HAL_StatusTypeDef Status = HAL_UART_Receive(&huart2, &ch, 1, 0);
 	HAL_StatusTypeDef Status = HAL_UART_Receive(m_huart2, &ch, 1, 0);
 	if (Status != HAL_OK)
 	{
 		if ((m_huart2->Instance->ISR & USART_ISR_ORE) != 0)
 		{
-			//__HAL_UART_CLEAR_OREFLAG(&huart2);
 			__HAL_UART_CLEAR_OREFLAG(m_huart2);
 		}
 
 		// here we have a time to print the command
 		while (m_cmdprint < m_cmdcount)
 		{
-			//HAL_UART_Transmit(&huart2, &_cmdbuffer[_cmdprint++], 1, 0xFFFF);
 			HAL_UART_Transmit(m_huart2, &m_cmdbuffer[m_cmdprint++], 1, 0xFFFF);
 		}
 
@@ -61,7 +55,7 @@ int CommandTask::commTask()
 		char bs[] = "\b \b";
 		m_cmdcount--;
 		m_cmdprint--;
-		//HAL_UART_Transmit(&huart2, (uint8_t*)bs, strlen(bs), 0xFFFF);
+
 		HAL_UART_Transmit(m_huart2, (uint8_t*)bs, strlen(bs), 0xFFFF);
 	}
 	else

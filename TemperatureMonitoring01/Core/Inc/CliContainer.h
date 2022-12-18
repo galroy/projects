@@ -8,9 +8,12 @@
 #ifndef INC_CLICONTAINER_H_
 #define INC_CLICONTAINER_H_
 
-#define MAX_CLI_COMMANDS 12
-
 #include "CliCommand.h"
+
+enum CliCmd
+{
+	MAX_CLI_COMMANDS = 12
+};
 
 class CliContainer {
 private:

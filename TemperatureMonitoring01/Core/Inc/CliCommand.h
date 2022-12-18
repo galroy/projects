@@ -8,7 +8,6 @@
 #ifndef INC_CLICOMMAND_H_
 #define INC_CLICOMMAND_H_
 
-
 #include <string.h>
 #include <stdlib.h>     /* atoi */
 
@@ -17,13 +16,9 @@
 #include "DHT.h"
 #include "Structs.h"
 
-
-
-
-
-#define MAX_COMMAND_NAME_LEN 15
-#define LED_DEFAULT_DELAY 300
-
+enum{
+	MAX_COMMAND_NAME_LEN = 15
+};
 
 class CliCommand{
 private:
@@ -66,7 +61,7 @@ public:
 	LedBlinkCmd(char *commandName,LedGpioTask* led):CliCommand(commandName),m_pLed(led){}
 	void doCommand(const char *param){
 		if(strlen(param) == 0){
-			m_pLed->blink(LED_DEFAULT_DELAY);
+			m_pLed->blink(LED_DELAY);
 		}else{
 			m_pLed->blink(atoi(param));
 		}

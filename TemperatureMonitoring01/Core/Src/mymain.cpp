@@ -57,20 +57,3 @@ extern "C" int _write(int fd, char* ptr, int len) {
     HAL_UART_Transmit(&huart2, (uint8_t *) ptr, len, HAL_MAX_DELAY);
     return len;
 }
-
-/*extern "C" void StartManagerTask(void *argument)
-{
-
-  for(;;)
-  {
-
-	// if(m->m_dht->hasData()){
-		// printf("Temperature: %4.1f, humidity: %4.1f\r\n", m->m_dht->getTempperature(), m->m_dht->getHumidty());
-	 //}
-	  if(dht.hasData()){
-	 		  printf("Temperature: %4.1f, humidity: %4.1f\r\n", dht.getTempperature(), dht.getHumidty());
-	 	  }
-    osDelay(1);
-  }
-
-}*/

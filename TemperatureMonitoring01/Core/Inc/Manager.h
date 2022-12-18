@@ -10,7 +10,7 @@
 
 #include "main.h"
 #include "fatfs.h"
-//#include "SDCardMountSingleton.h"
+
 #include "CommandTask.h"
 #include "CliContainer.h"
 #include "RTCClock.h"
@@ -20,16 +20,15 @@
 #include "Structs.h"
 #include "LedGpioTask.h"
 
-
 #define LOG_FILE_NAME "log.txt"
 #define ALERT_FILE_NAME "alert.txt"
-
 
 enum temperatureAlarmStat{
 	TAS_OFF,
 	TAS_OFF_BY_USER,
 	TAS_ON
 };
+
 enum systemState
 {
 	SYS_NORMAL,

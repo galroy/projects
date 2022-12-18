@@ -8,10 +8,10 @@
 #ifndef INC_MAINTIMER_H_
 #define INC_MAINTIMER_H_
 
-//#include <string.h>
 #include "TimerTask.h"
-//#include <stdio.h>
-#define MAX_TIMER_TASKS 10
+enum MaxTask{
+	 MAX_TIMER_TASKS = 10
+};
 
 class MainTimer {
 private:
@@ -20,20 +20,13 @@ private:
 public:
 	MainTimer() {
 		m_timerCount = 0;
-	//	memset(m_timerTasks, 0, sizeof(TimerTask*) * MAX_TIMER_TASKS);
+
 	}
-	~MainTimer() {
-		/*for (int i = 0; i < m_timerCount; i++) {
-			if (m_timerTasks[i] != 0) {
-				delete m_timerTasks[i];
-			}
-		}*/
-	}
+	~MainTimer(){}
 	void addTimerTask(TimerTask *pTimerTask) {
 		if (getTimerTaskIndex(pTimerTask) == -1) {
 			m_timerTasks[m_timerCount] = pTimerTask;
 			m_timerCount++;
-			//printf("add m_timerCount = %d\r\n",m_timerCount);
 		}
 
 	}
@@ -48,7 +41,6 @@ public:
 				m_timerTasks[i] = m_timerTasks[m_timerCount];
 				m_timerTasks[m_timerCount] = { 0 };
 			}
-			//printf("delete m_timerCount = %d\r\n",m_timerCount);
 		}
 
 	}
@@ -64,7 +56,6 @@ private:
 			if (m_timerTasks[i] == pTimerTask) {
 				return i;
 			}
-
 		}
 		return -1;
 	}

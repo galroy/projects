@@ -6,6 +6,7 @@
  */
 
 #include "RTCClock.h"
+#include "stdio.h"
 
 #define RTC_START_STOP      (1 << 7)
 #define RTC_DATE_TIME_SIZE  7
@@ -36,43 +37,52 @@ RTCClock::RTCClock(I2C_HandleTypeDef* hi2c,uint8_t devAddr) {
 	// TODO Auto-generated constructor stub
 	m_hi2c = hi2c;
 	m_devAddr = devAddr;
-
 }
 
 RTCClock::~RTCClock() {
 	// TODO Auto-generated destructor stub
 }
 
-void RTCClock::Write(uint16_t memAddr, uint8_t * buffer, uint16_t size)
+HAL_StatusTypeDef RTCClock::write(uint16_t memAddr, uint8_t * buffer, uint16_t size)
 {
-	HAL_I2C_Mem_Write(m_hi2c, m_devAddr, memAddr, 1, buffer, size, 0xFF);
+	HAL_StatusTypeDef status;
+	status = HAL_I2C_Mem_Write(m_hi2c, m_devAddr, memAddr, 1, buffer, size, 0xFF);
+	if(status != HAL_OK){
+		printf("HAL_I2C_Mem_Write error status=%d\r\n",status);
+	}
+	return status;
 }
 
-void RTCClock::Read(uint16_t memAddr, uint8_t * buffer, uint16_t size)
+HAL_StatusTypeDef RTCClock::read(uint16_t memAddr, uint8_t * buffer, uint16_t size)
 {
-	HAL_I2C_Mem_Read(m_hi2c, m_devAddr, memAddr, 1, buffer, size, 0xFF);
+	HAL_StatusTypeDef status;
+	status = HAL_I2C_Mem_Read(m_hi2c, m_devAddr, memAddr, 1, buffer, size, 0xFF);
+	if(status != HAL_OK){
+		printf("HAL_I2C_Mem_Read error status=%d\r\n",status);
+	}
+	return status;
 }
 
 void RTCClock::Start()
 {
 	uint8_t sec = 0;
-	HAL_I2C_Mem_Read(m_hi2c, m_devAddr, 0, 1, &sec, 1, 0xFF);
+	read(0, &sec, 1);
 	sec &= ~RTC_START_STOP;
-	HAL_I2C_Mem_Write(m_hi2c, m_devAddr, 0, 1, &sec, 1, 0xFF);
+	write(0, &sec, 1);
 }
 
 void RTCClock::Stop()
 {
 	uint8_t sec = 0;
-	HAL_I2C_Mem_Read(m_hi2c, m_devAddr, 0, 1, &sec, 1, 0xFF);
+	read(0, &sec, 1);
 	sec |= RTC_START_STOP;
-	HAL_I2C_Mem_Write(m_hi2c, m_devAddr, 0, 1, &sec, 1, 0xFF);
+	write(0, &sec, 1);
 }
 
 int RTCClock::IsRunning()
 {
 	uint8_t sec = 0;
-	HAL_I2C_Mem_Read(m_hi2c, m_devAddr, 0, 1, &sec, 1, 0xFF);
+	read(0, &sec, 1);
 	return (sec & RTC_START_STOP) == 0;
 }
 
@@ -93,7 +103,7 @@ uint8_t RTCClock::intToBcd(int value, int minVal, int maxVal)
 DateTime RTCClock::getTime()
 {
 	uint8_t buffer[RTC_DATE_TIME_SIZE];
-	HAL_I2C_Mem_Read(m_hi2c, m_devAddr, 0, 1, buffer, RTC_DATE_TIME_SIZE, 0xFF);
+	read(0, buffer, RTC_DATE_TIME_SIZE);
 
 	// remove stop bit if set
 	buffer[0] &= ~RTC_START_STOP;
@@ -143,6 +153,6 @@ HAL_StatusTypeDef RTCClock::setTime(DateTime * dateTime)
 	buffer[5] = intToBcd(dateTime->month, 1, 12);
 	buffer[6] = intToBcd(dateTime->year, 1, 99);
 
-	status = HAL_I2C_Mem_Write(m_hi2c, m_devAddr, 0, 1, buffer, RTC_DATE_TIME_SIZE, 0xFF);
+	status = write(0, buffer, RTC_DATE_TIME_SIZE);
 	return status;
 }

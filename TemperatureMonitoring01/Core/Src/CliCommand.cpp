@@ -4,8 +4,9 @@
  *  Created on: Nov 26, 2022
  *      Author: USER-PC
  */
-#include "Flash.h"
+
 #include <stdio.h>
+#include "Flash.h"
 #include "CliCommand.h"
 #include "fatfs.h"
 #include "Manager.h"
@@ -177,7 +178,6 @@ void readLogFileCmd::doCommand(const char *param) {
 		while (!f_eof(&fil)) {
 			f_gets(buffer, MAX_LEN, &fil);
 			printf("%s\r", buffer);
-
 		}
 	}
 	f_close(&fil);

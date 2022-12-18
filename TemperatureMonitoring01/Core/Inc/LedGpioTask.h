@@ -9,7 +9,10 @@
 #define INC_LEDGPIOTASK_H_
 #include "main.h"
 
-#define LED_DELAY 300
+enum LedDelay
+{
+	LED_DELAY = 300
+};
 enum LedState
 {
 	STATE_OFF,

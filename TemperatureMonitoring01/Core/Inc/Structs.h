@@ -33,7 +33,6 @@ struct temperatureBoundary{
 };
 
 struct eventLog{
-	//DateTime dtStamp;
 	char chDateTimeStamp[17]; //dd.mm.yy HH:MM:SS
 	temperatureStatus ts;
 	double temperature;

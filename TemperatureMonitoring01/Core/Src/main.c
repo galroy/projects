@@ -122,11 +122,11 @@ static void MX_TIM7_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_SPI1_Init(void);
 void StartDefaultTask(void *argument);
-void StartCommTask(void *argument);
-void StartManagerTask(void *argument);
-void startReadDHTTask(void *argument);
-void startBlinkLed(void *argument);
-void Entry_Buzzer(void *argument);
+extern void StartCommTask(void *argument);
+extern void StartManagerTask(void *argument);
+extern void startReadDHTTask(void *argument);
+extern void startBlinkLed(void *argument);
+extern void Entry_Buzzer(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -650,96 +650,6 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_StartCommTask */
-/**
-* @brief Function implementing the CommTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartCommTask */
-__weak void StartCommTask(void *argument)
-{
-  /* USER CODE BEGIN StartCommTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartCommTask */
-}
-
-/* USER CODE BEGIN Header_StartManagerTask */
-/**
-* @brief Function implementing the managerTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartManagerTask */
-__weak void StartManagerTask(void *argument)
-{
-  /* USER CODE BEGIN StartManagerTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartManagerTask */
-}
-
-/* USER CODE BEGIN Header_startReadDHTTask */
-/**
-* @brief Function implementing the readDHTTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_startReadDHTTask */
-__weak void startReadDHTTask(void *argument)
-{
-  /* USER CODE BEGIN startReadDHTTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END startReadDHTTask */
-}
-
-/* USER CODE BEGIN Header_startBlinkLed */
-/**
-* @brief Function implementing the StartBlinkLedTa thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_startBlinkLed */
-__weak void startBlinkLed(void *argument)
-{
-  /* USER CODE BEGIN startBlinkLed */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END startBlinkLed */
-}
-
-/* USER CODE BEGIN Header_Entry_Buzzer */
-/**
-* @brief Function implementing the Buzzer thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_Entry_Buzzer */
-__weak void Entry_Buzzer(void *argument)
-{
-  /* USER CODE BEGIN Entry_Buzzer */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END Entry_Buzzer */
 }
 
 /**

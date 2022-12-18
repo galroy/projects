@@ -2,8 +2,8 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "Manager.h"
-extern Manager *m;
 
+extern Manager *m;
 
 extern "C" void Entry_Buzzer(void *argument)
 {

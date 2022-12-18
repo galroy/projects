@@ -78,7 +78,7 @@ int DHT::waitWhileEqual(int value, int expectedTime) {
 	return true;
 }
 
-int DHT::read() {
+int DHT::readSync() {
 	setGpioOutput();
 
 	HAL_TIM_Base_Start(m_timer);
@@ -161,7 +161,6 @@ void DHT::readAsync() {
 	HAL_GPIO_WritePin(m_gpioPort, m_gpioPin, GPIO_PIN_RESET);
 
 	// should be in '0' for 18-20 ms
-	//MainTimer_registerCallback(Dht_onTimerInterrupt, dht);
 	mainTimer.addTimerTask(this);
 	m_counter = 0;
 	m_maxCounter = 19;
@@ -185,7 +184,6 @@ void DHT::timerFunc() {
 		setGpioExti();
 
 		m_counter = 0;
-		//MainTimer_unregisterCallback(Dht_onTimerInterrupt, dht);
 		mainTimer.deleteTimerTask(this);
 	}
 }
@@ -261,19 +259,14 @@ void DHT::onGpioInterrupt(uint16_t pin) {
 }
 
 bool DHT::hasData() {
-	//int hasData = m_state == DHT_STATE_READY;
+
 	bool ret = false;
 	if(m_state == DHT_STATE_READY){
 		ret = true;
 		m_state = DHT_STATE_NO_DATA;
 	}
 	return ret;
-	/*if (hasData) {
-		// reset state to avoid multiple reads
-		m_state = DHT_STATE_NO_DATA;
-	}
 
-	return hasData;*/
 }
 
 double DHT::getHumidty() {

@@ -9,8 +9,11 @@ enum BuzzerState
 	BUZZ_ON,
 	BUZZ_OFF
 };
-#define BUZ_LOW 202
-#define BUZ_HIGH 390
+
+enum BuzzerTone{
+	BUZ_LOW = 202,
+	BUZ_HIGH = 390
+};
 
 class Buzzer
 {

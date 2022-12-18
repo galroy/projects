@@ -11,7 +11,6 @@
 class TimerTask{
 
 public:
-
 	virtual ~TimerTask(){}
 	virtual void timerFunc() = 0;
 };

@@ -1,9 +1,9 @@
 #MicroXplorer Configuration settings - do not modify
 FREERTOS.BinarySemaphores01=DHT_SEM,Dynamic,NULL
-FREERTOS.FootprintOK=false
+FREERTOS.FootprintOK=true
 FREERTOS.IPParameters=Tasks01,FootprintOK,configTOTAL_HEAP_SIZE,BinarySemaphores01,Mutexes01
 FREERTOS.Mutexes01=logFileMutex,Dynamic,NULL;alertFileMutex,Dynamic,NULL
-FREERTOS.Tasks01=defaultTask,24,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL;CommTask,24,512,StartCommTask,As weak,NULL,Dynamic,NULL,NULL;managerTask,24,1024,StartManagerTask,As weak,NULL,Dynamic,NULL,NULL;readDHTTask,25,128,startReadDHTTask,As weak,NULL,Dynamic,NULL,NULL;StartBlinkLedTa,24,128,startBlinkLed,As weak,NULL,Dynamic,NULL,NULL;Buzzer,24,128,Entry_Buzzer,As weak,NULL,Dynamic,NULL,NULL
+FREERTOS.Tasks01=defaultTask,24,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL;CommTask,24,512,StartCommTask,As external,NULL,Dynamic,NULL,NULL;managerTask,24,1024,StartManagerTask,As external,NULL,Dynamic,NULL,NULL;readDHTTask,25,128,startReadDHTTask,As external,NULL,Dynamic,NULL,NULL;StartBlinkLedTa,24,128,startBlinkLed,As external,NULL,Dynamic,NULL,NULL;Buzzer,24,128,Entry_Buzzer,As external,NULL,Dynamic,NULL,NULL
 FREERTOS.configTOTAL_HEAP_SIZE=9500
 File.Version=6
 GPIO.groupedBy=Group By Peripherals

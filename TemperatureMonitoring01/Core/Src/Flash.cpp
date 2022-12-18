@@ -36,7 +36,7 @@ HAL_StatusTypeDef Flash::writeToPage(uint32_t TypeProgram, uint32_t Address, voi
 	int index = 0;
 	while (index < dataSize)
 	{
-		uint64_t Data =*(uint64_t*)((int)data+index);
+		uint64_t Data =*(uint64_t*)((uint8_t*)data+index);
 		ret = HAL_FLASH_Program(TypeProgram, Address+index, Data);
 		if(ret != HAL_OK)
 		{
