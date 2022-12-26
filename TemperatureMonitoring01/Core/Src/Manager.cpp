@@ -8,6 +8,7 @@
 #include "Manager.h"
 #include "cmsis_os.h"
 #include "logger.h"
+#include "Flash.h"
 
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim6;
@@ -58,8 +59,6 @@ Manager::Manager(UART_HandleTypeDef *huart2, I2C_HandleTypeDef *hi2c1) {
 	m_pRtcClock = new RTCClock(hi2c1, 0XD0);
 
 	m_pDHT = new DHT(GPIOB, GPIO_PIN_5, &htim7);
-
-	m_pFlash = new Flash();
 
 	initCliContainer();
 

@@ -15,7 +15,6 @@
 #include "CliContainer.h"
 #include "RTCClock.h"
 #include "DHT.h"
-#include "Flash.h"
 #include "Buzzer.h"
 #include "Structs.h"
 #include "LedGpioTask.h"
@@ -46,7 +45,6 @@ private:
 
 	CliContainer *m_pCliContainer;
 	DHT* m_pDHT;
-	Flash* m_pFlash;
 	LedGpioTask* m_pRedLed;
 	LedGpioTask* m_pBlueLed;
 	Buzzer* m_pBuzzer;
