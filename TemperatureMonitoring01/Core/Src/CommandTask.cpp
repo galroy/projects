@@ -36,11 +36,9 @@ int CommandTask::commTask()
 		// here we have a time to print the command
 		while (m_cmdprint < m_cmdcount)
 		{
-			//HAL_UART_Transmit(&huart2, &_cmdbuffer[_cmdprint++], 1, 0xFFFF);
 			HAL_UART_Transmit(m_huart2, &m_cmdbuffer[m_cmdprint++], 1, 0xFFFF);
 		}
 
-		//HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 2, 0xFFFF);
 		HAL_UART_Transmit(m_huart2, (uint8_t*)"\r\n", 2, 0xFFFF);
 
 		m_cmdbuffer[m_cmdcount] = 0;

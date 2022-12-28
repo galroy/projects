@@ -18,15 +18,11 @@
 #include "Buzzer.h"
 #include "Structs.h"
 #include "LedGpioTask.h"
+#include "InfraRedReceiver.h"
+#include "IRContainer.h"
 
 #define LOG_FILE_NAME "log.txt"
 #define ALERT_FILE_NAME "alert.txt"
-
-enum temperatureAlarmStat{
-	TAS_OFF,
-	TAS_OFF_BY_USER,
-	TAS_ON
-};
 
 enum systemState
 {
@@ -42,13 +38,13 @@ private:
 
 	RTCClock* m_pRtcClock;
 	CommandTask* m_pCommandTask;
-
 	CliContainer *m_pCliContainer;
+	IRContainer* m_pIRContainer;
 	DHT* m_pDHT;
 	LedGpioTask* m_pRedLed;
 	LedGpioTask* m_pBlueLed;
 	Buzzer* m_pBuzzer;
-	temperatureAlarmStat m_temperatureAlarmStat;
+	InfraRedReceiver* m_pIrr;
 	systemState m_sysState;
 	uint32_t m_logTimeStampSecend;
 	uint32_t m_managerThreadDelay;
@@ -59,6 +55,8 @@ public:
 	virtual ~Manager();
 	CommandTask* getCommandTask(){return m_pCommandTask;}
 	DHT* getDHT(){return m_pDHT;}
+	IRContainer* getIRContainer(){return m_pIRContainer;}
+	InfraRedReceiver* getIrr(){return m_pIrr;}
 	Buzzer* getBuzzer(){return m_pBuzzer;}
 
 	LedGpioTask* getRedLed(){return m_pRedLed;}
@@ -66,8 +64,7 @@ public:
 
 	bool getTemperatureBoundaryFromFlash();
 
-	void setTemperatureAlarmStat(temperatureAlarmStat stat){m_temperatureAlarmStat = stat;}
-	//uint32_t getLogTimeStampSecend(){return m_logTimeStampSecend;}
+
 	uint32_t getManagerThreadDelay(){return m_managerThreadDelay;}
 	void printLogToSDCARD(DateTime* pDT);
 	void GetCurrDateTimeFromFlash(DateTime* pDT);
@@ -81,6 +78,7 @@ private:
 	void criticalState();
 	void printAlertLogToSDCard(char* alertType,DateTime *pDT);
 	void initCliContainer();
+	void initIRContainer();
 	void setTemperatureBoundary();
 	FRESULT initSDCardFileSystem();
 

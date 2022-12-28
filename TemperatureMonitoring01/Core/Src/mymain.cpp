@@ -42,12 +42,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t pin)
 	if(pin == SW1_Pin){
 		if(m->getBuzzer()->getState() == BUZZ_ON){
 			m->getBuzzer()->off();
-			m->setTemperatureAlarmStat(TAS_OFF_BY_USER);
+			m->getBuzzer()->setTemperatureAlarmStat(TAS_OFF_BY_USER);
 		}
-
 	}
 	if(pin == DHT_Pin){
 		m->getDHT()->onGpioInterrupt(pin);
+	}
+	if(pin == IR_Pin){
+		m->getIrr()->readAsync();
 	}
 
 }

@@ -13,12 +13,14 @@
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim7;
+extern TIM_HandleTypeDef htim16;
+
 extern osMutexId_t logFileMutexHandle;
 extern osMutexId_t alertFileMutexHandle;
 extern osSemaphoreId_t DHT_SEMHandle;
 extern Manager *m;
 
-enum timeDefine{
+enum timeDefine {
 	MILLISECONDS250 = 250,
 	CYCLES250 = 250,
 	SIXTY_SECONDS = 60,
@@ -26,9 +28,8 @@ enum timeDefine{
 	THOUSAND_MILLISECONDS = 1000
 };
 
-enum TemperatureBoundary{
-	DEFULT_WARNING_TEMPERATURE = 26,
-	DEFULT_CRITICAL_TEMPERATURE = 28
+enum TemperatureBoundary {
+	DEFULT_WARNING_TEMPERATURE = 26, DEFULT_CRITICAL_TEMPERATURE = 28
 };
 
 #define LOG_LEN		80
@@ -51,16 +52,19 @@ Manager::Manager(UART_HandleTypeDef *huart2, I2C_HandleTypeDef *hi2c1) {
 	}
 
 	setTemperatureBoundary();
-	m_temperatureAlarmStat = TAS_OFF;
 
 	m_sysState = SYS_START;
 
 	m_pCommandTask = new CommandTask(huart2);
 	m_pRtcClock = new RTCClock(hi2c1, 0XD0);
-
 	m_pDHT = new DHT(GPIOB, GPIO_PIN_5, &htim7);
+	m_pRedLed = new LedGpioTask(REDLED_GPIO_Port, REDLED_Pin);
+	m_pBlueLed = new LedGpioTask(BLUELED_GPIO_Port, BLUELED_Pin);
+	m_pBuzzer = new Buzzer(&htim3);
+	m_pIrr = new InfraRedReceiver(IR_GPIO_Port, IR_Pin, &htim16);
 
 	initCliContainer();
+	initIRContainer();
 
 	DateTime dt;
 	dt = m_pRtcClock->getTime();
@@ -76,16 +80,44 @@ Manager::~Manager() {
 	// TODO Auto-generated destructor stub
 }
 
+void Manager::initIRContainer() {
+	m_pIRContainer = new IRContainer();
+
+	LedOnIR *pLedOnIR = new LedOnIR(IR_COMMAND_1, m_pRedLed);
+	m_pIRContainer->addCommand(pLedOnIR);
+
+	LedOffIR *pLedOffIR = new LedOffIR(IR_COMMAND_2, m_pRedLed);
+	m_pIRContainer->addCommand(pLedOffIR);
+
+	LedBlinkIR *pLedBlinkIR = new LedBlinkIR(IR_COMMAND_3, m_pRedLed);
+	m_pIRContainer->addCommand(pLedBlinkIR);
+
+	RTCClockShowDateTimeIR *pRTCClockShowDateTimeIR =
+			new RTCClockShowDateTimeIR(IR_COMMAND_4, m_pRtcClock);
+	m_pIRContainer->addCommand(pRTCClockShowDateTimeIR);
+
+	DHTGetTemperatureIR *pDHTGetTemperatureIR = new DHTGetTemperatureIR(
+			IR_COMMAND_5, m_pDHT);
+	m_pIRContainer->addCommand(pDHTGetTemperatureIR);
+
+	showBoundaryTemperatureIR *pShowBoundaryTemperatureIR =
+			new showBoundaryTemperatureIR(IR_COMMAND_6, &m_temperatureBoundary);
+	m_pIRContainer->addCommand(pShowBoundaryTemperatureIR);
+
+	stopBuzzerIR* pStopBuzzerIR =
+				new stopBuzzerIR(IR_COMMAND_7, m_pBuzzer);
+		m_pIRContainer->addCommand(pStopBuzzerIR);
+
+}
+
 void Manager::initCliContainer() {
 	m_pCliContainer = new CliContainer();
 
-	m_pRedLed = new LedGpioTask(REDLED_GPIO_Port, REDLED_Pin);
-	m_pBlueLed = new LedGpioTask(BLUELED_GPIO_Port, BLUELED_Pin);
-
-	m_pBuzzer = new Buzzer(&htim3);
-
 	LedOnCmd *pLedOnCmd = new LedOnCmd((char*) "ledon", m_pRedLed);
 	m_pCliContainer->addCommand(pLedOnCmd);
+
+	LedOffCmd *pLedOffCmd = new LedOffCmd((char*) "ledoff", m_pRedLed);
+	m_pCliContainer->addCommand(pLedOffCmd);
 
 	RTCClockSetDateTimeCmd *pRTCClockSetDateTimeCmd =
 			new RTCClockSetDateTimeCmd((char*) "setdatetime", m_pRtcClock);
@@ -100,7 +132,7 @@ void Manager::initCliContainer() {
 	m_pCliContainer->addCommand(pDHTGetTemperatureCmd);
 
 	setWarningTemperatureCmd *pSetWarningTemperatureCmd =
-			new setWarningTemperatureCmd((char*) "setwarning", //
+			new setWarningTemperatureCmd((char*) "setwarning",
 					&m_temperatureBoundary);
 	m_pCliContainer->addCommand(pSetWarningTemperatureCmd);
 
@@ -251,7 +283,8 @@ void Manager::normalizManagerThreadDelay(DateTime *pDT) {
 		m_managerThreadDelay = MILLISECONDS250; //try back to norma
 	} else {
 		m_managerThreadDelay = m_managerThreadDelay
-				+ (((delta * THOUSAND_MILLISECONDS) / SIXTY_SECONDS) / FOUR_SECONDS);
+				+ (((delta * THOUSAND_MILLISECONDS) / SIXTY_SECONDS)
+						/ FOUR_SECONDS);
 	}
 
 }
@@ -265,7 +298,7 @@ void Manager::warningState() {
 
 	m_pBlueLed->off();
 	m_pRedLed->on();
-	m_temperatureAlarmStat = TAS_OFF;
+	m_pBuzzer->setTemperatureAlarmStat(TAS_OFF);
 	m_pBuzzer->off();
 	m_sysState = SYS_WARNING;
 }
@@ -273,8 +306,9 @@ void Manager::criticalState() {
 
 	m_pBlueLed->off();
 	m_pRedLed->blink(300);
-	if (m_temperatureAlarmStat == TAS_OFF) {
-		m_temperatureAlarmStat = TAS_ON;
+
+	if(m_pBuzzer->getTemperatureAlarmStat() == TAS_OFF){
+		m_pBuzzer->setTemperatureAlarmStat(TAS_ON);
 		m_pBuzzer->on();
 	}
 	m_sysState = SYS_CRITICAL;
@@ -283,7 +317,7 @@ void Manager::normalState() {
 
 	m_pBlueLed->on();
 	m_pRedLed->off();
-	m_temperatureAlarmStat = TAS_OFF;
+	m_pBuzzer->setTemperatureAlarmStat(TAS_OFF);
 	m_pBuzzer->off();
 	m_sysState = SYS_NORMAL;
 }
@@ -341,6 +375,11 @@ extern "C" void StartManagerTask(void *argument) {
 			m->AlertLog(sysState);
 
 			sysState = m->getSysState();
+		}
+		if (m->getIrr()->hasData()) {
+			//printf("code = %lu\r\n", m->getIrr()->getCode());
+			m->getIRContainer()->callCommand(
+					m->getIrr()->getCode());
 		}
 		osDelay(m->getManagerThreadDelay());
 	}

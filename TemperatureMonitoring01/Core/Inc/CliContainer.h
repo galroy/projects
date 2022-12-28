@@ -12,7 +12,7 @@
 
 enum CliCmd
 {
-	MAX_CLI_COMMANDS = 12
+	MAX_CLI_COMMANDS = 13
 };
 
 class CliContainer {
