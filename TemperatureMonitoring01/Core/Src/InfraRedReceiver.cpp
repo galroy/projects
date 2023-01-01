@@ -6,6 +6,8 @@
  */
 
 #include <InfraRedReceiver.h>
+#include "Manager.h"
+extern Manager *m;
 
 enum timeDefine {
 	TEN_THOUSAND	= 10000,
@@ -53,6 +55,7 @@ void InfraRedReceiver::readAsync() {
 		if (cmdli == cmd){ // Check for errors
 			m_code = m_tempCode; // If no bit errors
 			m_state = IR_STATE_READY;
+			m->getIRContainer()->callCommand(m_code);
 		}
 		m_bitIndex = 0;
 	}

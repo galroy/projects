@@ -376,11 +376,11 @@ extern "C" void StartManagerTask(void *argument) {
 
 			sysState = m->getSysState();
 		}
-		if (m->getIrr()->hasData()) {
+	/*	if (m->getIrr()->hasData()) {
 			//printf("code = %lu\r\n", m->getIrr()->getCode());
 			m->getIRContainer()->callCommand(
 					m->getIrr()->getCode());
-		}
+		}*/
 		osDelay(m->getManagerThreadDelay());
 	}
 
